@@ -1,0 +1,9 @@
+- Công việc 1(29/06/2023): Lidar -> Mode 2D: Lọc 
+vector[8000] + hai lần -> hàm lọc -> Đưa ra đưa một vector lọc -> Các hàm lọc (ví dụ karmal, ... ) 
+-> Lọc này là lọc bên python -> Dev như bên Ros 
+- Quay 3 vòng -> Lọc 
+- Phát triễn quay vòng -> vẽ -> Lọc -> quay vòng -> Lọc -> Vẽ 
+
+- Thiếu: 
+- Mode 0:
+	+ Thiếu đi chiều reverse của step motor -> Code arduino 
