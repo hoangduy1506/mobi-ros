@@ -176,7 +176,7 @@ def drawing2D():
 #### Begin Main Thread Program ####
 
 arduino = serial.Serial(
-    port='COM5',
+    port='COM6',
     baudrate=115200
 )
 time.sleep(1)

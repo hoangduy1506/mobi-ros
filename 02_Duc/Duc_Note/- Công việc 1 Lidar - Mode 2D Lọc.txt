@@ -7,3 +7,7 @@ vector[8000] + hai lần -> hàm lọc -> Đưa ra đưa một vector lọc -> C
 - Thiếu: 
 - Mode 0:
 	+ Thiếu đi chiều reverse của step motor -> Code arduino 
+
+- Công việc (03/07/2023): lidar -> lỗi ở chạy vòng -> Tạm thời cho chạy 4 vòng 
++ Tạo mảng hai chiều chứa các dữ liệu
++ Có các dữ liệu -> Dùng bộ lọc trừ các dữ liệu sai lệch -> Chia đều ra được số liệu -> Append vào vẽ ! 
