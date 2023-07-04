@@ -21,6 +21,11 @@ class my2DStruct:
         self.value2= value2
         self.value3= value3
 
+### Create a two dimension array to store and implement filter
+array_2d = [[my2DStruct(0.0, 0.0, 0.0) for _ in range(4200)] for _ in range(3)]
+xAxes=[]
+yAxes=[]
+
 # Define function drawing 3D Mapping 
 def drawing3D():
     # myFigure = plt.figure(dpi=200, figsize=(10,10))
@@ -138,16 +143,16 @@ def drawing3D():
             plt.show()
 
 # Define function filter X
-def functionFilterX(arrayDraw2D, value):
+def functionFilterX(value):
     idxRow=0
     idxCollumn=0
     valueX=0
     count=0
     for idxRow in range(3):
         for idxCollumn in range(4500):
-            if(value == arrayDraw2D[idxRow][idxCollumn].value1):
-                if( abs(arrayDraw2D[idxRow][idxCollumn].value2) <500 ):
-                    valueX= valueX+ (arrayDraw2D[idxRow][idxCollumn].value2)* (arrayDraw2D[idxRow][idxCollumn].value2)
+            if(value == array_2d[idxRow][idxCollumn].value1):
+                if( abs(array_2d[idxRow][idxCollumn].value2) <500 ):
+                    valueX= valueX+ (array_2d[idxRow][idxCollumn].value2)* (array_2d[idxRow][idxCollumn].value2)
                     count= count+1
                     break
     if(count ==3):
@@ -160,16 +165,16 @@ def functionFilterX(arrayDraw2D, value):
   
 
 # Define function filter Y
-def functionFilterY(arrayDraw2D, value):
+def functionFilterY(value):
     idxRow=0
     idxCollumn=0
     valueY=0
     count=0
     for idxRow in range(3):
         for idxCollumn in range(4500):
-            if(value == arrayDraw2D[idxRow][idxCollumn].value1):
-                if( abs(arrayDraw2D[idxRow][idxCollumn].value3) <500 ):
-                    valueY= valueY+ (arrayDraw2D[idxRow][idxCollumn].value3)* (arrayDraw2D[idxRow][idxCollumn].value3)
+            if(value == array_2d[idxRow][idxCollumn].value1):
+                if( abs(array_2d[idxRow][idxCollumn].value3) <500 ):
+                    valueY= valueY+ (array_2d[idxRow][idxCollumn].value3)* (array_2d[idxRow][idxCollumn].value3)
                     count= count+1
                     break
     if(count ==3):
@@ -180,12 +185,12 @@ def functionFilterY(arrayDraw2D, value):
         return math.sqrt(valueY/ 1)
 
 # Define function calculating root mean square of data
-def rootMeanSquare(arrayDraw2D, arrayDrawX, arrayDrawY):
+def rootMeanSquare():
     idx=0
     for idx in range(4500):
-        if(arrayDraw2D[0][idx].value2 !=0 and abs(arrayDraw2D[0][idx].value2) <500 and arrayDraw2D[0][idx].value3 !=0 and abs(arrayDraw2D[0][idx].value3) <500):
-            arrayDrawX.append(functionFilterX(arrayDraw2D, arrayDraw2D[0][idx].value1 ))
-            arrayDrawY.append(functionFilterY(arrayDraw2D, arrayDraw2D[0][idx].value1 ))
+        if(array_2d[0][idx].value2 !=0 and abs(array_2d[0][idx].value2) <500 and array_2d[0][idx].value3 !=0 and abs(array_2d[0][idx].value3) <500):
+            xAxes.append(functionFilterX(array_2d[0][idx].value1 ))
+            yAxes.append(functionFilterY(array_2d[0][idx].value1 ))
         else:
             continue
 
@@ -195,12 +200,7 @@ def drawing2D():
 
     # Create a new figure
     fig, ax = plt.subplots()
-    xAxes=[]
-    yAxes=[]
     limit_of_data = True
-
-    ### Create a two dimension array to store and implement filter
-    array_2d = [[my2DStruct(0.0, 0.0, 0.0) for _ in range(4200)] for _ in range(3)]
     rowOfArray=0
     collumOfArray=0
 
@@ -239,7 +239,7 @@ def drawing2D():
 
             ax.clear
 
-    rootMeanSquare(array_2d, xAxes, yAxes)
+    rootMeanSquare()
     ax.scatter(xAxes,yAxes,s=0.1,c='green')
     ax.scatter(xAxes[0], yAxes[0], s=30, c = 'red')
     ax.set_xlim(-400, 400)
