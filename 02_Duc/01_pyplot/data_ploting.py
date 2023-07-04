@@ -22,7 +22,7 @@ class my2DStruct:
         self.value3= value3
 
 ### Create a two dimension array to store and implement filter
-array_2d = [[my2DStruct(0.0, 0.0, 0.0) for _ in range(4200)] for _ in range(3)]
+array_2d = [[my2DStruct(0.0, 0.0, 0.0) for _ in range(5000)] for _ in range(3)]
 xAxes=[]
 yAxes=[]
 
