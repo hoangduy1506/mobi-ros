@@ -19,7 +19,7 @@
   * \brief set up global var
 */
 int i=0;
-int pulse_per_round= 8000;
+int pulse_per_round= 4000;
 double posX=0;
 double posY=0;
 double posY_inner=0;
@@ -92,6 +92,7 @@ ISR(TIMER1_COMPA_vect)
         if(360 <= posX)
         {
           posX = 0;
+          Serial.println("Round Up");
         }
       } 
       

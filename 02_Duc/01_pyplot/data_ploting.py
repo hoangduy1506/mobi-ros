@@ -1,5 +1,6 @@
 import serial
 import time
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 # from mpl_toolkits import mplot3d
@@ -12,6 +13,13 @@ header = ['x', 'y', 'z', 'robot_x', 'robot_y', 'robot_z']
 with open('storeData.csv', 'w', encoding='UTF8', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(header)
+
+### Create a struct 
+class my2DStruct:
+    def __init__ (self, value1, value2, value3):
+        self.value1= value1
+        self.value2= value2
+        self.value3= value3
 
 # Define function drawing 3D Mapping 
 def drawing3D():
@@ -129,6 +137,59 @@ def drawing3D():
             # display the plot
             plt.show()
 
+# Define function filter X
+def functionFilterX(arrayDraw2D, value):
+    idxRow=0
+    idxCollumn=0
+    valueX=0
+    count=0
+    for idxRow in range(3):
+        for idxCollumn in range(4500):
+            if(value == arrayDraw2D[idxRow][idxCollumn].value1):
+                if( abs(arrayDraw2D[idxRow][idxCollumn].value2) <500 ):
+                    valueX= valueX+ (arrayDraw2D[idxRow][idxCollumn].value2)* (arrayDraw2D[idxRow][idxCollumn].value2)
+                    count= count+1
+                    break
+    if(count ==3):
+        return math.sqrt(valueX/ 3)
+    elif(count ==2):
+        return math.sqrt(valueX/ 2)
+    elif(count ==1):
+        return math.sqrt(valueX/ 1)
+        
+  
+
+# Define function filter Y
+def functionFilterY(arrayDraw2D, value):
+    idxRow=0
+    idxCollumn=0
+    valueY=0
+    count=0
+    for idxRow in range(3):
+        for idxCollumn in range(4500):
+            if(value == arrayDraw2D[idxRow][idxCollumn].value1):
+                if( abs(arrayDraw2D[idxRow][idxCollumn].value3) <500 ):
+                    valueY= valueY+ (arrayDraw2D[idxRow][idxCollumn].value3)* (arrayDraw2D[idxRow][idxCollumn].value3)
+                    count= count+1
+                    break
+    if(count ==3):
+        return math.sqrt(valueY/ 3)
+    elif(count ==2):
+        return math.sqrt(valueY/ 2)
+    elif(count ==1):
+        return math.sqrt(valueY/ 1)
+
+# Define function calculating root mean square of data
+def rootMeanSquare(arrayDraw2D, arrayDrawX, arrayDrawY):
+    idx=0
+    for idx in range(4500):
+        if(arrayDraw2D[0][idx].value2 !=0 and abs(arrayDraw2D[0][idx].value2) <500 and arrayDraw2D[0][idx].value3 !=0 and abs(arrayDraw2D[0][idx].value3) <500):
+            arrayDrawX.append(functionFilterX(arrayDraw2D, arrayDraw2D[0][idx].value1 ))
+            arrayDrawY.append(functionFilterY(arrayDraw2D, arrayDraw2D[0][idx].value1 ))
+        else:
+            continue
+
+
 # Define function drawing 2D Mapping
 def drawing2D():
 
@@ -136,8 +197,13 @@ def drawing2D():
     fig, ax = plt.subplots()
     xAxes=[]
     yAxes=[]
-    
     limit_of_data = True
+
+    ### Create a two dimension array to store and implement filter
+    array_2d = [[my2DStruct(0.0, 0.0, 0.0) for _ in range(4200)] for _ in range(3)]
+    rowOfArray=0
+    collumOfArray=0
+
 
     while limit_of_data:
         while arduino.in_waiting == 0:
@@ -147,26 +213,33 @@ def drawing2D():
         dataPacket  = dataPacket.strip('\r\n')
         if (dataPacket == 'End Data'):
             limit_of_data = False
+        elif (dataPacket == 'Round Up'):
+            rowOfArray= rowOfArray+1
+            collumOfArray=0            
         else:
             splitData = dataPacket.split(',')
+            yawDegree= float(splitData[0])
             dist    = float(splitData[2])
             yaw     = float(splitData[0]) *3.14/180
-            
-            xAxes.append(dist*(np.cos(yaw)) + robot_pos_x)
-            yAxes.append(dist*(np.sin(yaw)) + robot_pos_y)
+
+            array_2d[rowOfArray][collumOfArray].value1=yawDegree
+            array_2d[rowOfArray][collumOfArray].value2=(dist*(np.cos(yaw)) + robot_pos_x)
+            array_2d[rowOfArray][collumOfArray].value3=(dist*(np.sin(yaw)) + robot_pos_y)
             
             xTemp = dist*(np.cos(yaw))
             yTemp = dist*(np.sin(yaw))
 
-            writeList = [xTemp, yTemp, "0", robot_pos_x, robot_pos_y, robot_pos_z]
+            writeList = [array_2d[rowOfArray][collumOfArray].value1 , array_2d[rowOfArray][collumOfArray].value2 , array_2d[rowOfArray][collumOfArray].value3 ]
             with open('storeData.csv', 'a', encoding='UTF8', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(writeList)
-                
-            print(dist)
+            
+            collumOfArray= collumOfArray+1
+            print(yawDegree,dist)
 
             ax.clear
 
+    rootMeanSquare(array_2d, xAxes, yAxes)
     ax.scatter(xAxes,yAxes,s=0.1,c='green')
     ax.scatter(xAxes[0], yAxes[0], s=30, c = 'red')
     ax.set_xlim(-400, 400)
