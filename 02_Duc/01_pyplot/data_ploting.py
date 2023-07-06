@@ -169,7 +169,7 @@ def calculateRootMeanSquare(value):
     RMS=0
     for idxRow in range(3):
         for idxCollum in range(4000):
-            if(array_2d[idxRow][idxCollum].value1== value & array_2d[idxRow][idxCollum].value2 !=0 & array_2d[idxRow][idxCollum].value2 <500):
+            if(array_2d[idxRow][idxCollum].value1== value and array_2d[idxRow][idxCollum].value2 !=0 and array_2d[idxRow][idxCollum].value2 <500):
                 RMS= RMS + array_2d[idxRow][idxCollum].value2* array_2d[idxRow][idxCollum].value2
                 count= count+1
                 break
@@ -237,11 +237,11 @@ def drawing2D():
     #### End use for test collect yawDegree
 
 
-    # ax.scatter(xAxes,yAxes,s=0.1,c='green')
-    # ax.scatter(xAxes[0], yAxes[0], s=30, c = 'red')
-    # ax.set_xlim(-400, 400)
-    # ax.set_ylim(-400, 400)
-    # plt.show()
+    ax.scatter(xAxes,yAxes,s=0.1,c='green')
+    ax.scatter(xAxes[0], yAxes[0], s=30, c = 'red')
+    ax.set_xlim(-400, 400)
+    ax.set_ylim(-400, 400)
+    plt.show()
 
 #### Begin Main Thread Program ####
 
