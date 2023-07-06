@@ -16,15 +16,15 @@ with open('storeData.csv', 'w', encoding='UTF8', newline='') as file:
 
 ### Create a struct 
 class my2DStruct:
-    def __init__ (self, value1, value2, value3):
+    def __init__ (self, value1, value2):
         self.value1= value1
         self.value2= value2
-        self.value3= value3
 
 ### Create a two dimension array to store and implement filter
-array_2d = [[my2DStruct(0.0, 0.0, 0.0) for _ in range(5000)] for _ in range(3)]
+array_2d = [[my2DStruct(0.0, 0.0) for _ in range(5000)] for _ in range(3)]
 xAxes=[]
 yAxes=[]
+posArray= []
 
 # Define function drawing 3D Mapping 
 def drawing3D():
@@ -140,60 +140,52 @@ def drawing3D():
             ax.scatter(xAxes[0], yAxes[0], zAxes[0], s=30, c = 'red')
             plt.title('Elevation: %d°, Azimuth: %d°, Roll: %d°' % (elev, azim, roll))
             # display the plot
-            plt.show()
+            plt.show()       
 
-# Define function filter X
-def functionFilterX(value):
+# Use for collect only 1 yawDegree
+def checkInArray(value):
+    idx=0
+    if(len(posArray)==0):
+         posArray.append(value)
+    else:
+        for idx in range(len(posArray)):
+            if(value== posArray[idx]):
+                return 0
+        return 1
+
+
+# Define function process an array 
+def processArray():
+    idx=0
+    for idx in range(4000):
+        if(checkInArray(array_2d[0][idx].value1)==1):
+            posArray.append(array_2d[0][idx].value1)
+
+# Function to calculate rootMeanSquare of each 
+def calculateRootMeanSquare(value):
     idxRow=0
-    idxCollumn=0
-    valueX=0
-    count=0
+    idxCollum=0
+    count=1
+    RMS=0
     for idxRow in range(3):
-        for idxCollumn in range(4500):
-            if(value == array_2d[idxRow][idxCollumn].value1):
-                if( abs(array_2d[idxRow][idxCollumn].value2) <500 ):
-                    valueX= valueX+ (array_2d[idxRow][idxCollumn].value2)* (array_2d[idxRow][idxCollumn].value2)
-                    count= count+1
-                    break
-    if(count ==3):
-        return math.sqrt(valueX/ 3)
-    elif(count ==2):
-        return math.sqrt(valueX/ 2)
-    elif(count ==1):
-        return math.sqrt(valueX/ 1)
-        
-  
+        for idxCollum in range(4000):
+            if(array_2d[idxRow][idxCollum].value1== value & array_2d[idxRow][idxCollum].value2 !=0 & array_2d[idxRow][idxCollum].value2 <500):
+                RMS= RMS + array_2d[idxRow][idxCollum].value2* array_2d[idxRow][idxCollum].value2
+                count= count+1
+                break
+    return math.sqrt(RMS/count)
 
-# Define function filter Y
-def functionFilterY(value):
-    idxRow=0
-    idxCollumn=0
-    valueY=0
-    count=0
-    for idxRow in range(3):
-        for idxCollumn in range(4500):
-            if(value == array_2d[idxRow][idxCollumn].value1):
-                if( abs(array_2d[idxRow][idxCollumn].value3) <500 ):
-                    valueY= valueY+ (array_2d[idxRow][idxCollumn].value3)* (array_2d[idxRow][idxCollumn].value3)
-                    count= count+1
-                    break
-    if(count ==3):
-        return math.sqrt(valueY/ 3)
-    elif(count ==2):
-        return math.sqrt(valueY/ 2)
-    elif(count ==1):
-        return math.sqrt(valueY/ 1)
+                
 
-# Define function calculating root mean square of data
+# Function to call each yawDegree to calculate rootMeanSquare       
 def rootMeanSquare():
     idx=0
-    for idx in range(4500):
-        if(array_2d[0][idx].value2 !=0 and abs(array_2d[0][idx].value2) <500 and array_2d[0][idx].value3 !=0 and abs(array_2d[0][idx].value3) <500):
-            xAxes.append(functionFilterX(array_2d[0][idx].value1 ))
-            yAxes.append(functionFilterY(array_2d[0][idx].value1 ))
-        else:
-            continue
-
+    RMSResult=0
+    for idx in range(len(posArray)):
+        RMSResult=calculateRootMeanSquare(posArray[idx])
+        xAxes.append(RMSResult*(np.cos(posArray[idx]*3.14/180)))
+        yAxes.append(RMSResult*(np.sin(posArray[idx]*3.14/180)))
+    
 
 # Define function drawing 2D Mapping
 def drawing2D():
@@ -220,16 +212,11 @@ def drawing2D():
             splitData = dataPacket.split(',')
             yawDegree= float(splitData[0])
             dist    = float(splitData[2])
-            yaw     = float(splitData[0]) *3.14/180
 
-            array_2d[rowOfArray][collumOfArray].value1=yawDegree
-            array_2d[rowOfArray][collumOfArray].value2=(dist*(np.cos(yaw)) + robot_pos_x)
-            array_2d[rowOfArray][collumOfArray].value3=(dist*(np.sin(yaw)) + robot_pos_y)
-            
-            xTemp = dist*(np.cos(yaw))
-            yTemp = dist*(np.sin(yaw))
+            array_2d[rowOfArray][collumOfArray].value1= yawDegree
+            array_2d[rowOfArray][collumOfArray].value2= dist
 
-            writeList = [array_2d[rowOfArray][collumOfArray].value1 , array_2d[rowOfArray][collumOfArray].value2 , array_2d[rowOfArray][collumOfArray].value3 ]
+            writeList = [array_2d[rowOfArray][collumOfArray].value1 , array_2d[rowOfArray][collumOfArray].value2 ]
             with open('storeData.csv', 'a', encoding='UTF8', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(writeList)
@@ -239,12 +226,22 @@ def drawing2D():
 
             ax.clear
 
+    processArray()
     rootMeanSquare()
-    ax.scatter(xAxes,yAxes,s=0.1,c='green')
-    ax.scatter(xAxes[0], yAxes[0], s=30, c = 'red')
-    ax.set_xlim(-400, 400)
-    ax.set_ylim(-400, 400)
-    plt.show()
+    #### Use for test collect yawDegree
+
+    # idxTest=0
+    # for idxTest in range(len(posArray)):
+    #     print(posArray[idxTest])
+
+    #### End use for test collect yawDegree
+
+
+    # ax.scatter(xAxes,yAxes,s=0.1,c='green')
+    # ax.scatter(xAxes[0], yAxes[0], s=30, c = 'red')
+    # ax.set_xlim(-400, 400)
+    # ax.set_ylim(-400, 400)
+    # plt.show()
 
 #### Begin Main Thread Program ####
 
