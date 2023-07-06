@@ -21,7 +21,7 @@ class my2DStruct:
         self.value2= value2
 
 ### Create a two dimension array to store and implement filter
-array_2d = [[my2DStruct(0.0, 0.0) for _ in range(5000)] for _ in range(3)]
+array_2d = [[my2DStruct(0.0, 0.0) for _ in range(5000)] for _ in range(10)]
 xAxes=[]
 yAxes=[]
 posArray= []
@@ -238,7 +238,7 @@ def drawing2D():
 
 
     ax.scatter(xAxes,yAxes,s=0.1,c='green')
-    ax.scatter(xAxes[0], yAxes[0], s=30, c = 'red')
+    ax.scatter(0, 0, s=30, c = 'red')
     ax.set_xlim(-400, 400)
     ax.set_ylim(-400, 400)
     plt.show()

@@ -46,7 +46,7 @@ void setup()
     /* Declare Pins As Output */
     pinMode(largeDirPin, OUTPUT);
     pinMode(largePin, OUTPUT);
-    digitalWrite(largeDirPin, HIGH);
+    digitalWrite(largeDirPin, LOW);
     pinMode(STEPPER_PIN_1, OUTPUT);
     pinMode(STEPPER_PIN_2, OUTPUT);
     pinMode(STEPPER_PIN_3, OUTPUT);
@@ -138,7 +138,7 @@ ISR(TIMER1_COMPA_vect)
 	
 	else if(MODE2DMAPPING ==modeWorking)
 	{
-    if(round_2D<3)
+    if(round_2D<10)
       Serial.println(String(posX,2)+ ","+ String(posY,2) +"," + String(distance));
     else
     {
