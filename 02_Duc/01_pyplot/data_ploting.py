@@ -1,31 +1,16 @@
 import serial
 import time
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 # from mpl_toolkits import mplot3d
 import csv
 import pandas as pd
 from matplotlib.animation import FuncAnimation
-
 ### Create a csv file ###
 header = ['x', 'y', 'z', 'robot_x', 'robot_y', 'robot_z']
 with open('storeData.csv', 'w', encoding='UTF8', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(header)
-
-### Create a struct 
-class my2DStruct:
-    def __init__ (self, value1, value2):
-        self.value1= value1
-        self.value2= value2
-
-### Create a two dimension array to store and implement filter
-array_2d = [[my2DStruct(0.0, 0.0) for _ in range(5000)] for _ in range(10)]
-xAxes=[]
-yAxes=[]
-posArray= []
-
 # Define function drawing 3D Mapping 
 def drawing3D():
     # myFigure = plt.figure(dpi=200, figsize=(10,10))
@@ -72,7 +57,6 @@ def drawing3D():
                     xAxes2.append(dist*(np.cos(pitch))*(np.cos(yaw)))
                     yAxes2.append(dist*(np.cos(pitch))*(np.sin(yaw)))
                     zAxes2.append(dist*(np.sin(pitch)))
-
                 
                 xTemp= dist*(np.cos(pitch))*(np.cos(yaw))               
                 yTemp= dist*(np.cos(pitch))*(np.sin(yaw))
@@ -91,13 +75,11 @@ def drawing3D():
             changePOV= False
             break
         elev = int(elev)
-
         azim = input("Enter the azimuth angle in degrees: ")
         if azim == 'end':
             changePOV= False
             break
         azim = int(azim)
-
         roll = input("Enter the roll angle in degrees: ")
         if roll == 'end':
             changePOV= False
@@ -140,63 +122,15 @@ def drawing3D():
             ax.scatter(xAxes[0], yAxes[0], zAxes[0], s=30, c = 'red')
             plt.title('Elevation: %d°, Azimuth: %d°, Roll: %d°' % (elev, azim, roll))
             # display the plot
-            plt.show()       
-
-# Use for collect only 1 yawDegree
-def checkInArray(value):
-    idx=0
-    if(len(posArray)==0):
-         posArray.append(value)
-    else:
-        for idx in range(len(posArray)):
-            if(value== posArray[idx]):
-                return 0
-        return 1
-
-
-# Define function process an array 
-def processArray():
-    idx=0
-    for idx in range(4000):
-        if(checkInArray(array_2d[0][idx].value1)==1):
-            posArray.append(array_2d[0][idx].value1)
-
-# Function to calculate rootMeanSquare of each 
-def calculateRootMeanSquare(value):
-    idxRow=0
-    idxCollum=0
-    count=1
-    RMS=0
-    for idxRow in range(3):
-        for idxCollum in range(4000):
-            if(array_2d[idxRow][idxCollum].value1== value and array_2d[idxRow][idxCollum].value2 !=0 and array_2d[idxRow][idxCollum].value2 <500):
-                RMS= RMS + array_2d[idxRow][idxCollum].value2* array_2d[idxRow][idxCollum].value2
-                count= count+1
-                break
-    return math.sqrt(RMS/count)
-
-                
-
-# Function to call each yawDegree to calculate rootMeanSquare       
-def rootMeanSquare():
-    idx=0
-    RMSResult=0
-    for idx in range(len(posArray)):
-        RMSResult=calculateRootMeanSquare(posArray[idx])
-        xAxes.append(RMSResult*(np.cos(posArray[idx]*3.14/180)))
-        yAxes.append(RMSResult*(np.sin(posArray[idx]*3.14/180)))
-    
-
+            plt.show()
 # Define function drawing 2D Mapping
 def drawing2D():
-
     # Create a new figure
     fig, ax = plt.subplots()
+    xAxes=[]
+    yAxes=[]
+    
     limit_of_data = True
-    rowOfArray=0
-    collumOfArray=0
-
-
     while limit_of_data:
         while arduino.in_waiting == 0:
             pass
@@ -205,44 +139,28 @@ def drawing2D():
         dataPacket  = dataPacket.strip('\r\n')
         if (dataPacket == 'End Data'):
             limit_of_data = False
-        elif (dataPacket == 'Round Up'):
-            rowOfArray= rowOfArray+1
-            collumOfArray=0            
         else:
             splitData = dataPacket.split(',')
-            yawDegree= float(splitData[0])
             dist    = float(splitData[2])
-
-            array_2d[rowOfArray][collumOfArray].value1= yawDegree
-            array_2d[rowOfArray][collumOfArray].value2= dist
-
-            writeList = [array_2d[rowOfArray][collumOfArray].value1 , array_2d[rowOfArray][collumOfArray].value2 ]
+            yaw     = float(splitData[0]) *3.14/180
+            
+            xAxes.append(dist*(np.cos(yaw)) + robot_pos_x)
+            yAxes.append(dist*(np.sin(yaw)) + robot_pos_y)
+            
+            xTemp = dist*(np.cos(yaw))
+            yTemp = dist*(np.sin(yaw))
+            writeList = [xTemp, yTemp, "0", robot_pos_x, robot_pos_y, robot_pos_z]
             with open('storeData.csv', 'a', encoding='UTF8', newline='') as file:
                 writer = csv.writer(file)
                 writer.writerow(writeList)
-            
-            collumOfArray= collumOfArray+1
-            print(yawDegree,dist)
-
+                
+            print(dist)
             ax.clear
-
-    processArray()
-    rootMeanSquare()
-    #### Use for test collect yawDegree
-
-    # idxTest=0
-    # for idxTest in range(len(posArray)):
-    #     print(posArray[idxTest])
-
-    #### End use for test collect yawDegree
-
-
     ax.scatter(xAxes,yAxes,s=0.1,c='green')
-    ax.scatter(0, 0, s=30, c = 'red')
+    ax.scatter(xAxes[0], yAxes[0], s=30, c = 'red')
     ax.set_xlim(-400, 400)
     ax.set_ylim(-400, 400)
     plt.show()
-
 #### Begin Main Thread Program ####
 
 arduino = serial.Serial(
@@ -250,9 +168,7 @@ arduino = serial.Serial(
     baudrate=115200
 )
 time.sleep(1)
-
 programWorking= True
-
 while programWorking:
     # Three modes: 0: Stop Lidar || 1: 2D 5 rounds || 2: 3D 90 degree pitch (Test may be 20 degree )
     print("Waiting for input number: ")
