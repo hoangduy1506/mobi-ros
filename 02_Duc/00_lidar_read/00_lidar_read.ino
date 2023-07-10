@@ -138,11 +138,12 @@ ISR(TIMER1_COMPA_vect)
 	
 	else if(MODE2DMAPPING ==modeWorking)
 	{
-    if(round_2D<10)
+    if(round_2D<5)
       Serial.println(String(posX,2)+ ","+ String(posY,2) +"," + String(distance));
     else
     {
       Serial.println("End Data");
+      digitalWrite(PINRELAY, LOW);
       stop_flag = true;
       measure_flag= false;
     }
@@ -169,7 +170,7 @@ void loop()
             i=0;
             posX=0;
             posY=0;
-
+            round_2D= 0;
 			
 			      digitalWrite(PINRELAY, HIGH);
 			
