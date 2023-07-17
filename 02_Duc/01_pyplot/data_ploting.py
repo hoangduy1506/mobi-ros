@@ -9,7 +9,7 @@ import pandas as pd
 from matplotlib.animation import FuncAnimation
 
 ### Create a csv file ###
-header = ['x', 'y', 'z', 'robot_x', 'robot_y', 'robot_z']
+header = ['Degree', 'XCoordinate', 'YCoordinate']
 with open('storeData.csv', 'w', encoding='UTF8', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(header)
@@ -21,7 +21,7 @@ class my2DStruct:
         self.value2= value2
 
 ### Create a two dimension array to store and implement filter
-array_2d = [[my2DStruct(0.0, 0.0) for _ in range(5000)] for _ in range(5)]
+array_2d = [[my2DStruct(0.0, 0.0) for _ in range(5000)] for _ in range(3)]
 xAxes=[]
 yAxes=[]
 posArray= []
@@ -157,7 +157,7 @@ def checkInArray(value):
 # Define function process an array 
 def processArray():
     idx=0
-    for idx in range(4000):
+    for idx in range(4000):                                    
         if(checkInArray(array_2d[0][idx].value1)==1):
             posArray.append(array_2d[0][idx].value1)
 
@@ -167,7 +167,7 @@ def calculateRootMeanSquare(value):
     idxCollum=0
     count=1
     RMS=0
-    for idxRow in range(3):
+    for idxRow in range(2):
         for idxCollum in range(4000):
             if(array_2d[idxRow][idxCollum].value1== value and array_2d[idxRow][idxCollum].value2 !=0 and array_2d[idxRow][idxCollum].value2 <500):
                 RMS= RMS + array_2d[idxRow][idxCollum].value2* array_2d[idxRow][idxCollum].value2
@@ -183,8 +183,14 @@ def rootMeanSquare():
     RMSResult=0
     for idx in range(len(posArray)):
         RMSResult=calculateRootMeanSquare(posArray[idx])
-        xAxes.append(RMSResult*(np.cos(posArray[idx]*3.14/180)))
-        yAxes.append(RMSResult*(np.sin(posArray[idx]*3.14/180)))
+        xAxesValue= RMSResult*(np.cos(posArray[idx]*3.14/180))
+        yAxesValue= RMSResult*(np.sin(posArray[idx]*3.14/180))
+        xAxes.append(xAxesValue)
+        yAxes.append(yAxesValue)
+        writeList = [posArray[idx], xAxesValue, yAxesValue]
+        with open('storeData.csv', 'a', encoding='UTF8', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(writeList)        
     
 
 # Define function drawing 2D Mapping
@@ -216,12 +222,7 @@ def drawing2D():
 
             array_2d[rowOfArray][collumOfArray].value1= yawDegree
             array_2d[rowOfArray][collumOfArray].value2= dist
-
-            writeList = [array_2d[rowOfArray][collumOfArray].value1 , array_2d[rowOfArray][collumOfArray].value2 ]
-            with open('storeData.csv', 'a', encoding='UTF8', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(writeList)
-            
+          
             collumOfArray= collumOfArray+1
             print(yawDegree,dist)
 
@@ -229,15 +230,7 @@ def drawing2D():
 
     processArray()
     rootMeanSquare()
-    #### Use for test collect yawDegree
-
-    # idxTest=0
-    # for idxTest in range(len(posArray)):
-    #     print(posArray[idxTest])
-
-    #### End use for test collect yawDegree
-
-
+    
     ax.scatter(xAxes,yAxes,s=0.1,c='green')
     ax.scatter(0, 0, s=30, c = 'red')
     ax.set_xlim(-400, 400)
@@ -258,9 +251,9 @@ while programWorking:
     # Three modes: 0: Stop Lidar || 1: 2D 5 rounds || 2: 3D 90 degree pitch (Test may be 20 degree )
     print("Waiting for input number: ")
     modeWorking = input("Enter a mode working: ") # Taking input from user
-    robot_pos_x = float(input("Enter robot x_position: "))
-    robot_pos_y = float(input("Enter robot y_position: "))
-    robot_pos_z = float(input("Enter robot z_position: "))
+    # robot_pos_x = float(input("Enter robot x_position: "))
+    # robot_pos_y = float(input("Enter robot y_position: "))
+    # robot_pos_z = float(input("Enter robot z_position: "))
     arduino.write(bytes(modeWorking, 'utf-8'))
     time.sleep(0.05)
     if(modeWorking== '0'):

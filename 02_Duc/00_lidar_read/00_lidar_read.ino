@@ -138,7 +138,7 @@ ISR(TIMER1_COMPA_vect)
 	
 	else if(MODE2DMAPPING ==modeWorking)
 	{
-    if(round_2D<5)
+    if(round_2D<3)
       Serial.println(String(posX,2)+ ","+ String(posY,2) +"," + String(distance));
     else
     {
