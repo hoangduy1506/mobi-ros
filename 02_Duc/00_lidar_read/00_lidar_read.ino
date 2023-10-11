@@ -19,7 +19,7 @@
   * \brief set up global var
 */
 int i=0;
-int pulse_per_round= 4000;
+int pulse_per_round= 4000; // Number of pulse to one round
 double posX=0;
 double posY=0;
 double posY_inner=0;
@@ -27,8 +27,8 @@ int timer_2_counter = 0;
 int step_number = 0;
 int a=0;
 int count_posY=0;
-bool measure_flag = false;
-bool stop_flag = false;
+bool measure_flag = false; // To check the status of measure the distance of lidar 
+bool stop_flag = false;  // To check for interrupt timer to read data
 int round_2D=0; /* Round to draw 2D Mapping */
 
 /* Mode 0: Waiting Select Mode || Mode 1: 2D Mapping || Mode 2: 3D Mapping */
@@ -139,12 +139,20 @@ ISR(TIMER1_COMPA_vect)
 	else if(MODE2DMAPPING ==modeWorking)
 	{
     if(round_2D<3)
+      /* Send string for python to extract and get the posX, posY and distance */
       Serial.println(String(posX,2)+ ","+ String(posY,2) +"," + String(distance));
     else
     {
+      /* Send End Data to stop read  */
       Serial.println("End Data");
+
+      /* Set relay to low to disconnect */
       digitalWrite(PINRELAY, LOW);
+
+      /* Set stop_flag to true to end interrupt to read data */
       stop_flag = true;
+
+      /* set measure_flag to false to  */
       measure_flag= false;
     }
 	}

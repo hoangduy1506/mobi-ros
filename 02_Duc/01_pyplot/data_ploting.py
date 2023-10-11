@@ -14,13 +14,15 @@ with open('storeData.csv', 'w', encoding='UTF8', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(header)
 
-### Create a struct ###
+# Create a struct #
 class my2DStruct:
+    # value1: store yawDegree
+    # value2: store distance 
     def __init__ (self, value1, value2):
         self.value1= value1
         self.value2= value2
 
-### Create a two dimension array to store and implement filter
+# Create a two dimension array to store and implement filter with 3 row/ 5000 collumm # 
 array_2d = [[my2DStruct(0.0, 0.0) for _ in range(5000)] for _ in range(3)]
 xAxes=[]
 yAxes=[]
@@ -142,11 +144,14 @@ def drawing3D():
             # display the plot
             plt.show()       
 
-# Use for collect only 1 yawDegree
+# Use for collect only 1 yawDegree #
 def checkInArray(value):
     idx=0
+
+    # If posArray is empty -> Get the value to Array # 
     if(len(posArray)==0):
          posArray.append(value)
+    # Else if posArray already has -> return 0 to not add to Array # 
     else:
         for idx in range(len(posArray)):
             if(value== posArray[idx]):
@@ -154,7 +159,7 @@ def checkInArray(value):
         return 1
 
 
-# Define function process an array 
+# Process Array to get posArray that is an array to store only one value for each yawDegree # 
 def processArray():
     idx=0
     for idx in range(4000):                                    
@@ -181,12 +186,18 @@ def calculateRootMeanSquare(value):
 def rootMeanSquare():
     idx=0
     RMSResult=0
+
+    # For idx of posArray to calculate the mean of its yawDegree | For example: at yawDegree: 0.8 -> We have 0.7; 1.0 -> Get the mean of its distance 
     for idx in range(len(posArray)):
         RMSResult=calculateRootMeanSquare(posArray[idx])
+
+        # Calculate xAxesValue and yAxesValue to draw 
         xAxesValue= RMSResult*(np.cos(posArray[idx]*3.14/180))
         yAxesValue= RMSResult*(np.sin(posArray[idx]*3.14/180))
         xAxes.append(xAxesValue)
         yAxes.append(yAxesValue)
+
+        # This writeList is to store in file # 
         writeList = [posArray[idx], xAxesValue, yAxesValue]
         with open('storeData.csv', 'a', encoding='UTF8', newline='') as file:
             writer = csv.writer(file)
@@ -196,66 +207,108 @@ def rootMeanSquare():
 # Define function drawing 2D Mapping
 def drawing2D():
 
-    # Create a new figure
+    # Create a new figure #
     fig, ax = plt.subplots()
+
+    # Variable to check limit of round to measure # 
     limit_of_data = True
+
+    # Round of array to draw 2D # 
     rowOfArray=0
+
+    # Collum of array to draw 3D # 
+    # If collumofArray==0 -> Draw 2D #
     collumOfArray=0
 
-
+    # Start while # 
     while limit_of_data:
         while arduino.in_waiting == 0:
             pass
+
+        # Read line sent from arduino depending on Mode #
+        # Process the dataPacket receiving from arduino # 
         dataPacket = arduino.readline()
         dataPacket  = str(dataPacket, 'utf-8')    
         dataPacket  = dataPacket.strip('\r\n')
         
+        # If dataPacket == End Data -> Stop ! # 
         if (dataPacket == 'End Data'):
             limit_of_data = False
+        # If dataPacket == Round up -> Increase size of array to store value -> Draw # 
         elif (dataPacket == 'Round Up'):
             rowOfArray= rowOfArray+1
-            collumOfArray=0            
+            collumOfArray=0   
+                     
         else:
+            # Get the line from arduino # 
             splitData = dataPacket.split(',')
+            # [0] : PosX 0-> 360 
+            # [1] : PosY 0-> 360 
+            # [2] : distance get from arduino 
             yawDegree= float(splitData[0])
             dist    = float(splitData[2])
 
+            # Set value yawDegree to PosX (value1) || Set value dist -> value2 #
             array_2d[rowOfArray][collumOfArray].value1= yawDegree
             array_2d[rowOfArray][collumOfArray].value2= dist
           
+            # Each + 1 collumm -> up round +1 #
             collumOfArray= collumOfArray+1
+            # Print to console #
             print(yawDegree,dist)
 
             ax.clear
 
+    # End while # 
+
+    # Process Array to get the quality of 2D mapping # 
+    # Process to get an Array of each distance #
     processArray()
+
+    # Then when get the Array of each distance -> Process to get rootMeanSquare and get to xAxes, yAxes to draw # 
     rootMeanSquare()
     
+    # Add to draw # 
     ax.scatter(xAxes,yAxes,s=0.1,c='green')
     ax.scatter(0, 0, s=30, c = 'red')
     ax.set_xlim(-400, 400)
     ax.set_ylim(-400, 400)
     plt.show()
 
-#### Begin Main Thread Program ####
 
+### Start main thread of programme ###
+
+# Connect with arduino through serial 
 arduino = serial.Serial(
-    port='COM7',
+    port='COM8',
     baudrate=115200
 )
+
+# Delay time
 time.sleep(1)
 
+# Variable to control program working or not #       
 programWorking= True
+
 
 while programWorking:
     # Three modes: 0: Stop Lidar || 1: 2D 5 rounds || 2: 3D 90 degree pitch (Test may be 20 degree )
+    # Taking input from user
+
     print("Waiting for input number: ")
-    modeWorking = input("Enter a mode working: ") # Taking input from user
+    modeWorking = input("Enter a mode working: ")
+
     # robot_pos_x = float(input("Enter robot x_position: "))
     # robot_pos_y = float(input("Enter robot y_position: "))
     # robot_pos_z = float(input("Enter robot z_position: "))
+
+    # Send to arduino (change modeWorking to bytes)
     arduino.write(bytes(modeWorking, 'utf-8'))
+
+    # Delay 0.05 s 
     time.sleep(0.05)
+
+    # Depend on which mode to start 
     if(modeWorking== '0'):
         programWorking= False
     elif (modeWorking== '1'):
