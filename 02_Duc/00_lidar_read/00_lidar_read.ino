@@ -126,6 +126,7 @@ ISR(TIMER1_COMPA_vect)
 
 	if(MODE3DMAPPING ==modeWorking)
 	{
+    /* Send string for python to extract and get the posX posY and the distance */
     if(posY<10)
       Serial.println(String(posX,2)+ ","+ String(posY,2) +"," + String(distance));
     else
@@ -138,6 +139,7 @@ ISR(TIMER1_COMPA_vect)
 	
 	else if(MODE2DMAPPING ==modeWorking)
 	{
+    /* To get 3 round of 2D  */
     if(round_2D<3)
       /* Send string for python to extract and get the posX, posY and distance */
       Serial.println(String(posX,2)+ ","+ String(posY,2) +"," + String(distance));
@@ -170,6 +172,7 @@ void loop()
     {
       if(Serial.available() > 0)
       {
+          /* To receive the mode from the python  */
           modeWorking= Serial.readString().toInt();
           if(modeWorking== MODE2DMAPPING)
           {
@@ -179,7 +182,8 @@ void loop()
             posX=0;
             posY=0;
             round_2D= 0;
-			
+
+            /* Set the relay to on */
 			      digitalWrite(PINRELAY, HIGH);
 			
             TIMSK1 |= (1 << OCIE1A);
