@@ -166,12 +166,15 @@ def processArray():
         if(checkInArray(array_2d[0][idx].value1)==1):
             posArray.append(array_2d[0][idx].value1)
 
-# Function to calculate rootMeanSquare of each 
+# Function to calculate rootMeanSquare of each yawDegree # 
 def calculateRootMeanSquare(value):
     idxRow=0
     idxCollum=0
     count=1
     RMS=0
+
+    # idxRow here need to adjust ( Because now is setting 3 rounds -> range 2 is enough )
+    # This function will scan for all -> Find the yawDegree to calculate the mean of value # 
     for idxRow in range(2):
         for idxCollum in range(4000):
             if(array_2d[idxRow][idxCollum].value1== value and array_2d[idxRow][idxCollum].value2 !=0 and array_2d[idxRow][idxCollum].value2 <500):
@@ -187,7 +190,7 @@ def rootMeanSquare():
     idx=0
     RMSResult=0
 
-    # For idx of posArray to calculate the mean of its yawDegree | For example: at yawDegree: 0.8 -> We have 0.7; 1.0 -> Get the mean of its distance 
+    # For idx of posArray to calculate the mean of its yawDegree | For example: at yawDegree: 0.8 -> We have 0.7; 1.0 -> Get the mean of its distance #
     for idx in range(len(posArray)):
         RMSResult=calculateRootMeanSquare(posArray[idx])
 
