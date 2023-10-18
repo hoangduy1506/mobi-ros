@@ -23,7 +23,7 @@ class my2DStruct:
         self.value2= value2
 
 # Create a two dimension array to store and implement filter with 3 row/ 5000 collumm # 
-array_2d = [[my2DStruct(0.0, 0.0) for _ in range(5000)] for _ in range(3)]
+array_2d = [[my2DStruct(0.0, 0.0) for _ in range(8000)] for _ in range(5)]
 xAxes=[]
 yAxes=[]
 posArray= []
@@ -46,16 +46,19 @@ def drawing3D():
     
     limit_of_data = True
     changePOV= True
+    # Read file to store # 
     with open("data3D.txt", "a") as file:
        while limit_of_data:
            while arduino.in_waiting == 0:
                 pass
+            # Read data from arduino # 
            dataPacket = arduino.readline()
            dataPacket  = str(dataPacket, 'utf-8')    
            dataPacket  = dataPacket.strip('\r\n')
            if (dataPacket == 'End Data'):
                 limit_of_data = False
            else:
+                # Calculate to draw 3D # 
                 splitData = dataPacket.split(',')
                 dist    = float(splitData[2])
                 pitch   = float(splitData[1]) *3.14/180
@@ -162,7 +165,7 @@ def checkInArray(value):
 # Process Array to get posArray that is an array to store only one value for each yawDegree # 
 def processArray():
     idx=0
-    for idx in range(4000):                                    
+    for idx in range(8000):                                    
         if(checkInArray(array_2d[0][idx].value1)==1):
             posArray.append(array_2d[0][idx].value1)
 
@@ -175,8 +178,8 @@ def calculateRootMeanSquare(value):
 
     # idxRow here need to adjust ( Because now is setting 3 rounds -> range 2 is enough )
     # This function will scan for all -> Find the yawDegree to calculate the mean of value # 
-    for idxRow in range(2):
-        for idxCollum in range(4000):
+    for idxRow in range(5):
+        for idxCollum in range(8000):
             if(array_2d[idxRow][idxCollum].value1== value and array_2d[idxRow][idxCollum].value2 !=0 and array_2d[idxRow][idxCollum].value2 <500):
                 RMS= RMS + array_2d[idxRow][idxCollum].value2* array_2d[idxRow][idxCollum].value2
                 count= count+1
@@ -233,6 +236,7 @@ def drawing2D():
         dataPacket = arduino.readline()
         dataPacket  = str(dataPacket, 'utf-8')    
         dataPacket  = dataPacket.strip('\r\n')
+        print(dataPacket)
         
         # If dataPacket == End Data -> Stop ! # 
         if (dataPacket == 'End Data'):
@@ -273,6 +277,10 @@ def drawing2D():
     
     # Add to draw # 
     ax.scatter(xAxes,yAxes,s=0.1,c='green')
+    
+    for i in range(1600):
+        ax.scatter(xAxes[i],yAxes[i],s=0.1,c='red')
+
     ax.scatter(0, 0, s=30, c = 'red')
     ax.set_xlim(-400, 400)
     ax.set_ylim(-400, 400)
@@ -283,7 +291,7 @@ def drawing2D():
 
 # Connect with arduino through serial 
 arduino = serial.Serial(
-    port='COM8',
+    port='COM7',
     baudrate=115200
 )
 
