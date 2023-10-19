@@ -122,14 +122,7 @@ def drawing3D():
             ax1 = plt.axes(projection ='3d')
             ax1.view_init(elev, azim, roll)  
             ax1.scatter(xAxes1,yAxes1,zAxes1,s=0.1,c='green')
-            ax1.scatter(xAxes1[0], yAxes1[0], zAxes1[0], s=30, c = 'red')
-            plt.title('Elevation: %d°, Azimuth: %d°, Roll: %d°' % (elev, azim, roll))
-            # display the plot
-            plt.show()
-            
-        elif(2==POVMode):
-            myFigure = plt.figure(dpi=200, figsize=(10,10))
-            ax2 = plt.axes(projection ='3d')
+            ax1.scatter(xAxes1[0], yAxes1[0ion ='3d')
             ax2.view_init(elev, azim, roll)  
             ax2.scatter(xAxes2,yAxes2,zAxes2,s=0.1,c='green')
             ax2.scatter(xAxes2[0], yAxes2[0], zAxes2[0], s=30, c = 'red')
